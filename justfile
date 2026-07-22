@@ -6,41 +6,60 @@ XDIR := justfile_directory()
 XFNT := XDIR+"/pdf/fonts"
 EXE := "pdfmocca"
 
-set-drel: inc-level
+update-version-info:
+    #!/bin/sh
+    shtool version -n "{{EXE}}" -d long -l txt ./version.txt >{{XDIR}}/version_info.txt
+
+set-drel: do-inc-level
     #!/bin/bash
     V=$(date '+%Y.%m.')
     V=$V$(cd {{XDIR}} && shtool version -n "{{EXE}}" -l short ./version.txt|cut -f 3 -d.)
     cd {{XDIR}} && just -f justfile set-version "$V"
 
-inc-version:
+git-push-level: inc-level git-push
+
+git-push:
+    #!/bin/sh
+    VERSION=$(shtool version -l txt ./version.txt)
+    TIME=$(date '+%F %T')
+    git commit --all -m "upd to v$VERSION on $TIME"
+    git push
+
+inc-version: do-inc-version update-version-info
+do-inc-version:
     #!/bin/bash
     cd {{XDIR}}
     shtool version -n "{{EXE}}" -i v -l txt ./version.txt
-    shtool version -n "{{EXE}}" -d long -l txt ./version.txt >{{XDIR}}/version_info.txt
 
-inc-major:
+inc-major: do-inc-major update-version-info
+do-inc-major:
     #!/bin/bash
     cd {{XDIR}}
     shtool version -n "{{EXE}}" -i r -l txt ./version.txt
     shtool version -n "{{EXE}}" -d long -l txt ./version.txt >{{XDIR}}/version_info.txt
 
-inc-level:
+inc-level: do-inc-level update-version-info
+do-inc-level:
     #!/bin/bash
     cd {{XDIR}}
     shtool version -n "{{EXE}}" -i l -l txt ./version.txt
     shtool version -n "{{EXE}}" -d long -l txt ./version.txt >{{XDIR}}/version_info.txt
 
-set-version _VERSION:
+set-version _VERSION: (do-set-version _VERSION) update-version-info
+
+do-set-version _VERSION:
     #!/bin/bash
     cd {{XDIR}}
     shtool version -n "{{EXE}}" -s "{{_VERSION}}" -l txt ./version.txt
-    shtool version -n "{{EXE}}" -d long -l txt ./version.txt >{{XDIR}}/version_info.txt
 
-make-release: set-drel
+make-update: git-push-level
+
+make-rel: set-drel git-push
     #!/bin/bash
     VERSION=$(shtool version -l txt ./version.txt)
-    MESSAGE="{{EXE}} automated release version $(shtool version -l text -d long ./version.txt)"
-    shtool version -n "{{EXE}}" -d long -l txt ./version.txt >{{XDIR}}/version_info.txt
+    VERL=$(shtool version -l text -d long ./version.txt)
+    TIME=$(date '+%F %T')
+    MESSAGE="{{EXE}} automated release version $VERL"
     gh release create v$VERSION --notes "$MESSAGE"
 
 #fetch-go:

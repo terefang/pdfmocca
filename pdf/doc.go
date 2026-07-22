@@ -346,7 +346,7 @@ func (pdf *PdfDoc) StreamEnd(tc bool) error {
 	}
 
 	_md = pdf.ioh.Finalize()
-	pdf.ioh.PrintFmt("%X-pdfmocca-startxref\n%d\n%%%%EOF\n", _xref)
+	pdf.ioh.PrintFmt("%x-pdfmocca:version=%s;hash=%s\n")
 
 	pdf.ioh.PrintFmt("startxref\n%d\n%%%%EOF\n", _xref)
 
