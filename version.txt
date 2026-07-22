@@ -1,0 +1,6 @@
+
+  ./version.txt -- Version Information for pdfmocca (syntax: Text)
+  [automatically generated and maintained by GNU shtool]
+
+  This is pdfmocca, Version 2026.07.1 (22-Jul-2026)
+
