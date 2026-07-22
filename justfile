@@ -54,11 +54,18 @@ do-set-version _VERSION:
 
 make-update: git-push-level
 
+
+make-prel: set-drel git-push
+    #!/bin/bash
+    VERSION=$(shtool version -l txt ./version.txt)
+    VERL=$(shtool version -l text -d long ./version.txt)
+    MESSAGE="{{EXE}} automated pre-release version $VERL"
+    gh release create v$VERSION --notes "$MESSAGE" --prerelease
+
 make-rel: set-drel git-push
     #!/bin/bash
     VERSION=$(shtool version -l txt ./version.txt)
     VERL=$(shtool version -l text -d long ./version.txt)
-    TIME=$(date '+%F %T')
     MESSAGE="{{EXE}} automated release version $VERL"
     gh release create v$VERSION --notes "$MESSAGE"
 
